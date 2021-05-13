@@ -7,8 +7,11 @@ import 'package:http/http.dart' as http;
 
 class Products with ChangeNotifier {
   List<Product> _items = [];
-
   //var _showFavoritesOnly = false;
+  final String authToken;
+  final String userId;
+
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get favoriteItems {
     return _items.where((prodItem) => prodItem.isFavorite).toList();
@@ -26,8 +29,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url =
-        'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products.json';
+    final url =
+        'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products.json?atuh=$authToken';
     try {
       final response = await http.post(
         url,
@@ -36,7 +39,7 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
+          'creatorId': userId,
         }),
       );
       final newProduct = Product(
@@ -58,7 +61,7 @@ class Products with ChangeNotifier {
     final prodIndex = _items.indexWhere((element) => element.id == id);
     if (prodIndex >= 0) {
       final url =
-          'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json';
+          'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json?auth=$authToken';
       await http.patch(url,
           body: json.encode({
             'title': newProduct.title,
@@ -75,7 +78,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     final url =
-        'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json';
+        'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json?auth=$authToken';
     final existingProductIndex =
         _items.indexWhere((element) => element.id == id);
     var existingProduct = _items[existingProductIndex];
@@ -91,15 +94,21 @@ class Products with ChangeNotifier {
     }
   }
 
-  Future<void> fetchAndSetProducts() async {
-    const url =
-        'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products.json';
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : '';
+    var url =
+        'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken&$filterString';
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       if (extractedData == null) {
         return;
       }
+      url =
+          'https://shop-app-c386f-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$userId.json?auth=$authToken';
+      final favoriteResponse = await http.get(url);
+      final favoriteData = json.decode(favoriteResponse.body);
       final List<Product> loadedProducts = [];
       extractedData.forEach((productId, productData) {
         loadedProducts.add(Product(
@@ -108,7 +117,8 @@ class Products with ChangeNotifier {
           description: productData['description'],
           price: productData['price'],
           imageUrl: productData['imageUrl'],
-          isFavorite: productData['isFavorite'],
+          isFavorite:
+              favoriteData == null ? false : favoriteData[productId] ?? false,
         ));
       });
       _items = loadedProducts;
@@ -117,13 +127,4 @@ class Products with ChangeNotifier {
       throw (error);
     }
   }
-  //void showFavoritesOnly() {
-  // _showFavoritesOnly = true;
-  // notifyListeners();
-  //}
-
-  //void showAll() {
-  //_showFavoritesOnly = false;
-  //notifyListeners();
-  // }
 }
