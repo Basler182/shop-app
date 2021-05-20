@@ -2,15 +2,14 @@
 
 A new Flutter project.
 
-## Getting Started
+## Screens
 
-This project is a starting point for a Flutter application.
+Login  Screen              |  Overview Screen
+:-------------------------:|:-------------------------:
+![](https://github.com/Basler182/shop-app/blob/feat-screens/screens/login.png)  |  ![](https://github.com/Basler182/shop-app/blob/feat-screens/screenshoots/overview.png)
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+Edit Item Screen           |  Cart Screen
+:-------------------------:|:-------------------------:
+![](https://github.com/Basler182/shop-app/blob/feat-screens/screens/edit_item.png)  |  ![](https://github.com/Basler182/shop-app/blob/feat-screens/screenshoots/cart.png)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
